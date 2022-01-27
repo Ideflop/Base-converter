@@ -1,16 +1,18 @@
+#! /bin/python3
+
 ''' 
 Todo:
-
-retravailler hex
 
 binaire module et signe juste entier?
 complement vrai juste entier
 complement à 2 juste entier
 
-empacter en fonction
+Finish ? :
+
+hex devrait fonctionnner de b et d en hex
 
 '''
-dec_convert = {
+dec_convert = { # table convert from base <=16 to dec
 "0": 0,
 "1": 1,
 "2": 2,
@@ -96,37 +98,54 @@ def bin_dec(number):
 
 import struct
 
-def binary(num):
-    return ''.join('{:0>8b}'.format(c) for c in struct.pack('!f', num))
+def binary(num): # convert dec into 32 bits
+    return ''.join('{:0>8b}'.format(c) for c in struct.pack('!f', num)) # fonction from stackoverflow
 
-base = str(input('Input Base (b,d,h) :'))
-number = str(input('Digit :'))
+def dec_to_hex(number):
+    list_convert = []
+    digit = number*(16**5) if isinstance(number, float) else number
+    while digit > 16:
+        list_convert.insert(0, int(digit % 16))
+        digit //= 16
+    list_convert.insert(0, digit % 16)
+    list_convert[0] = int(list_convert[0])
 
+    for i in range(len(list_convert)):
+        if list_convert[i] >= 10:
+            a = hex(list_convert[i])
+            list_convert[i] = a[2:]
 
-if base == 'b':
+    list_string = [str(list_convert) for list_convert in list_convert]
 
-    print('Decimal',convert_to_dec(number, 2)) # supporte virgule
-    try:
-        a = convert_to_dec(number, 2)
-        print('Hexadecimal',float.hex(convert_to_dec(number, 2)))
-    except TypeError:
-        print('Hexadecimale',hex(int(convert_to_dec(number, 2))))
+    if isinstance(number, float):
+        a = len(str(int(number)))
+        list_string.insert(a, '.')
 
-elif base == 'd':
+    return "".join(list_string)
 
-    print('Binaire',bin_dec(float(number))) # supporte virgule
-    print('Binaire 32 bits', binary(float(number))) # fc
-    print('hex',hex(int(binary(float(number)), 2)))
-    try: # supporte virgule
-        print('Hexadecimal',hex(int(number))) 
-    except ValueError:
-        print('Hexadecimal',float.hex(eval(number)))
+def output(base,number):
+    if base == 'b':
 
-elif base == 'h':
-    print('Decimal',float.fromhex(number)) # supporte virgule
-    print('binaire',bin_dec(float.fromhex(number))) # supporte virgule
-    print('Binaire 32 bits', binary(float(float.fromhex(number)))) # fc
+        print('Decimal :',convert_to_dec(number, 2)) # just dec
+        print('Hexadecimal :', dec_to_hex(convert_to_dec(number, 2))) # just hex
+        print('hexadecimal 8 bits :',hex(int(binary(float(convert_to_dec(number, 2))), 2))) # 8 bits
 
-else:
-    print(base, 'is not a valid base (b,d,h)')
+    elif base == 'd':
 
+        print('Binaire :',bin_dec(float(number))) # just bin
+        print('Binaire 32 bits :', binary(float(number))) # 32 bits
+        print('Hexadecimal :', dec_to_hex(eval(number))) # just hex
+        print('hexadecimal 8 bits :',hex(int(binary(float(number)), 2))) # 8 bits
+
+    elif base == 'h':
+        print('Decimal :',float.fromhex(number)) # just dec
+        print('binaire :',bin_dec(float.fromhex(number))) # just bin
+        print('Binaire 32 bits :', binary(float(float.fromhex(number)))) # 32 bin
+
+    else:
+        print(base, 'is not a valid base (b,d,h)')
+
+if __name__ == "__main__":
+    base = str(input('Input Base (b,d,h) :'))
+    number = str(input('Digit :'))
+    output(base, number)
