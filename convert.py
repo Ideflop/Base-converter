@@ -3,13 +3,11 @@
 ''' 
 Todo:
 
-binaire module et signe juste entier?
-complement vrai juste entier
-complement à 2 juste entier
+integer dans h affiche resultat meme si dec est un float
 
-Finish ? :
-
-hex devrait fonctionnner de b et d en hex
+convert_to_dec normalement pas non plus
+dec_to_hex ne supporte pas nombre négatif
+bin_dec non plus, si nombre negatif on diplay pas bin_dec mais just M&S
 
 '''
 dec_convert = { # table convert from base <=16 to dec
@@ -59,6 +57,8 @@ def convert_to_dec(s, base=10, convert_table=dec_convert):
 def dec2bin(num):
     global whole_list
     global dec_list
+    whole_list = []
+    dec_list = []
     whole, dec = str(num).split('.')
     whole = int(whole)
     dec = int(dec)
@@ -80,13 +80,11 @@ def dec2bin(num):
         decproduct = decdec
         counter += 1
         
-whole_list = []
-dec_list = []
-f_list = []
-dot = ['.']
 
-def bin_dec(number):
-    dec2bin(number)
+def bin_dec(num):
+    dot = ['.']
+    f_list = []
+    dec2bin(num)
 
     if(len(whole_list) > 1):
         whole_list.reverse()
@@ -101,9 +99,9 @@ import struct
 def binary(num): # convert dec into 32 bits
     return ''.join('{:0>8b}'.format(c) for c in struct.pack('!f', num)) # fonction from stackoverflow
 
-def dec_to_hex(number):
+def dec_to_hex(num):
     list_convert = []
-    digit = number*(16**5) if isinstance(number, float) else number
+    digit = num*(16**5) if isinstance(num, float) else num
     while digit > 16:
         list_convert.insert(0, int(digit % 16))
         digit //= 16
@@ -117,11 +115,46 @@ def dec_to_hex(number):
 
     list_string = [str(list_convert) for list_convert in list_convert]
 
-    if isinstance(number, float):
-        a = len(str(int(number)))
+    if isinstance(num, float):
+        a = len(str(int(num)))
         list_string.insert(a, '.')
 
     return "".join(list_string)
+
+def integer(num, bit_size=8): # number = input  et bit = la taille du nombre à la fin
+    init_number = eval(num)
+    if '.' in num:
+        return 'cannot convert flaot type'
+
+    num = str(abs(int(num)))
+    bit = bin_dec(float(26))
+    bef, aft = bit.split(".")
+    list_bit = list(bef)
+
+    if len(list_bit) > bit_size:
+        return 'bit format is smaller then the number in bit'
+    count = len(list_bit)
+    while count != bit_size:
+        list_bit.insert(0, '0')
+        count += 1
+    if init_number < 0:
+        list_bit[0] = '1'
+
+    return "".join(list_bit)
+
+def compl_vrai(number):
+    l = integer(number, bit_size)
+    l = list(str(l))
+    for i in range(len(l)):
+        l[i] = '0' if l[i]== '1' else '1'
+    return "".join(l)
+
+def compl_deux(number): 
+    binary1 = "0b"+str(compl_vrai(number))
+    binary2 = "0b1"
+    integer_sum = int(binary1, 2) + int(binary2, 2)
+    a = str(bin(integer_sum))
+    return a[2:]
 
 def output(base,number):
     if base == 'b':
@@ -134,13 +167,19 @@ def output(base,number):
 
         print('Binaire :',bin_dec(float(number))) # just bin
         print('Binaire 32 bits :', binary(float(number))) # 32 bits
+        print(f'Binaire M&S {bit_size} bits :',integer(number, bit_size)) # M&S
+        print('Binaire complément vrai :', compl_vrai(number))
+        print('Binaire complément à 2 :', compl_deux(number))
         print('Hexadecimal :', dec_to_hex(eval(number))) # just hex
-        print('hexadecimal 8 bits :',hex(int(binary(float(number)), 2))) # 8 bits
+        print('hexadecimal   8 bits :',hex(int(binary(float(number)), 2))) # 8 bits
 
     elif base == 'h':
-        print('Decimal :',float.fromhex(number)) # just dec
         print('binaire :',bin_dec(float.fromhex(number))) # just bin
         print('Binaire 32 bits :', binary(float(float.fromhex(number)))) # 32 bin
+        print(f'Binaire M&S {bit_size} bits :',integer(str(int(float.fromhex(number))), bit_size)) # M&S
+        print('Binaire complément vrai :', compl_vrai(str(int(float.fromhex(number)))))
+        print('Binaire complément à 2 :', compl_deux(str(int(float.fromhex(number)))))
+        print('Decimal :',float.fromhex(number)) # just dec
 
     else:
         print(base, 'is not a valid base (b,d,h)')
@@ -148,4 +187,5 @@ def output(base,number):
 if __name__ == "__main__":
     base = str(input('Input Base (b,d,h) :'))
     number = str(input('Digit :'))
+    bit_size = eval(input('Input the bit size for the binary number :'))
     output(base, number)
