@@ -4,12 +4,6 @@
 Todo:
 
 integer dans h affiche resultat meme si dec est un float
-bin_dec non plus, si nombre negatif on diplay - devant. integer utilse bin_dec
-
-Fait:
-convert_to_dec normalement pas non plus
-dec_to_hex ne supporte pas nombre négatif
-dec_convert pas besoin de lettre car fonction seulement utiliser pour converir en dec
 
 '''
 dec_convert = { # table convert from base <=16 to dec
@@ -87,6 +81,13 @@ def dec2bin(num):
         
 
 def bin_dec(num):
+    negatif = False
+    num = str(num)
+    if '-' in num:
+        num = num[1:]
+        negatif = True
+    num = eval(num)
+
     dot = ['.']
     f_list = []
     dec2bin(num)
@@ -97,9 +98,13 @@ def bin_dec(num):
 
     f_list = whole_list + dot+ dec_list
     strings = [str(f_list) for f_list in f_list]
+
+    if negatif:
+        strings.insert(0, '-')    
     return "".join(strings)
 
 import struct
+
 
 def binary(num): # convert dec into 32 bits
     return ''.join('{:0>8b}'.format(c) for c in struct.pack('!f', num)) # fonction from stackoverflow
@@ -141,7 +146,7 @@ def integer(num, bit_size=8): # number = input  et bit = la taille du nombre à 
         return 'cannot convert flaot type'
 
     num = str(abs(int(num)))
-    bit = bin_dec(float(26))
+    bit = bin_dec(float(num))
     bef, aft = bit.split(".")
     list_bit = list(bef)
 
@@ -156,15 +161,19 @@ def integer(num, bit_size=8): # number = input  et bit = la taille du nombre à 
 
     return "".join(list_bit)
 
-def compl_vrai(number):
-    l = integer(number, bit_size)
+def compl_vrai(num):
+    l = integer(num, bit_size)
     l = list(str(l))
     for i in range(len(l)):
         l[i] = '0' if l[i]== '1' else '1'
     return "".join(l)
 
-def compl_deux(number): 
-    binary1 = "0b"+str(compl_vrai(number))
+def compl_deux(num):
+    if '-' not in num:
+        return integer(num, bit_size)
+    
+    num = num[1:]
+    binary1 = "0b"+str(compl_vrai(num))
     binary2 = "0b1"
     integer_sum = int(binary1, 2) + int(binary2, 2)
     a = str(bin(integer_sum))
