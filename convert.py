@@ -4,10 +4,12 @@
 Todo:
 
 integer dans h affiche resultat meme si dec est un float
+bin_dec non plus, si nombre negatif on diplay - devant. integer utilse bin_dec
 
+Fait:
 convert_to_dec normalement pas non plus
 dec_to_hex ne supporte pas nombre négatif
-bin_dec non plus, si nombre negatif on diplay pas bin_dec mais just M&S
+dec_convert pas besoin de lettre car fonction seulement utiliser pour converir en dec
 
 '''
 dec_convert = { # table convert from base <=16 to dec
@@ -20,29 +22,30 @@ dec_convert = { # table convert from base <=16 to dec
 "6": 6,
 "7": 7,
 "8": 8,
-"9": 9,
-"a": 10,
-"b": 11,
-"c": 12,
-"d": 13,
-"e": 14,
-"f": 15,
+"9": 9, # j'ai enlevé a = 10 etc normalement fc utiliser seulement convertir bin vers dec
 }
 
-def convert_to_dec(s, base=10, convert_table=dec_convert):
+def convert_to_dec(num, base=10, convert_table=dec_convert):
+    negatif = False
+    if '-' in num:
+        num = num[1:]
+        negatif = True
+
     ret = 0
-    if "." not in s: 
-        bef = s
+    if "." not in num: 
+        bef = num
     else: 
-        bef, aft = s.split(".")
-    
+        bef, aft = num.split(".")
+        
     for i in enumerate(reversed(bef)):
         integer = convert_table[i[1]]
         if integer >= base: 
             raise ValueError
         ret += base**i[0] * integer
     
-    if "." not in s: 
+    if "." not in num:
+        if negatif:
+            return eval('-'+str(ret)) 
         return ret
 
     for i in enumerate(aft):
@@ -51,6 +54,8 @@ def convert_to_dec(s, base=10, convert_table=dec_convert):
             raise ValueError
         ret += base**-(i[0] + 1) * integer
 
+    if negatif:
+        return eval('-'+str(ret))
     return ret
 
 
@@ -100,6 +105,13 @@ def binary(num): # convert dec into 32 bits
     return ''.join('{:0>8b}'.format(c) for c in struct.pack('!f', num)) # fonction from stackoverflow
 
 def dec_to_hex(num):
+    negatif = False
+    num = str(num)
+    if '-' in num:
+        num = num[1:]
+        negatif = True
+    num = eval(num)
+
     list_convert = []
     digit = num*(16**5) if isinstance(num, float) else num
     while digit > 16:
@@ -118,7 +130,9 @@ def dec_to_hex(num):
     if isinstance(num, float):
         a = len(str(int(num)))
         list_string.insert(a, '.')
-
+    
+    if negatif:
+        list_string.insert(0, '-')
     return "".join(list_string)
 
 def integer(num, bit_size=8): # number = input  et bit = la taille du nombre à la fin
@@ -170,8 +184,8 @@ def output(base,number):
         print(f'Binaire M&S {bit_size} bits :',integer(number, bit_size)) # M&S
         print('Binaire complément vrai :', compl_vrai(number))
         print('Binaire complément à 2 :', compl_deux(number))
-        print('Hexadecimal :', dec_to_hex(eval(number))) # just hex
-        print('hexadecimal   8 bits :',hex(int(binary(float(number)), 2))) # 8 bits
+        print('Hexadecimal :', dec_to_hex(number)) # just hex
+        print('hexadecimal 8 bits :',hex(int(binary(float(number)), 2))) # 8 bits
 
     elif base == 'h':
         print('binaire :',bin_dec(float.fromhex(number))) # just bin
