@@ -4,6 +4,8 @@
 Todo:
 
 integer dans h affiche resultat meme si dec est un float
+hex par rapport m&s enlever 0x
+Implementer le codeur en DCB
 
 '''
 dec_convert = { # table convert from base <=16 to dec
@@ -105,7 +107,6 @@ def bin_dec(num):
 
 import struct
 
-
 def binary(num): # convert dec into 32 bits
     return ''.join('{:0>8b}'.format(c) for c in struct.pack('!f', num)) # fonction from stackoverflow
 
@@ -150,7 +151,7 @@ def integer(num, bit_size=8): # number = input  et bit = la taille du nombre à 
     bef, aft = bit.split(".")
     list_bit = list(bef)
 
-    if len(list_bit) > bit_size:
+    if len(list_bit) >= bit_size:
         return 'bit format is smaller then the number in bit'
     count = len(list_bit)
     while count != bit_size:
@@ -179,30 +180,56 @@ def compl_deux(num):
     a = str(bin(integer_sum))
     return a[2:]
 
+def dec_compl_deux(num):
+    list_bin = list(str(num))
+    len_bin = len(list_bin)
+    if list_bin[0] == '1':
+        list_bin[0] = -2**(len_bin-1)
+    else:
+        list_bin[0] = 0
+    
+    for i in range(1,len_bin):
+        if list_bin[i] == '1':
+            list_bin[i] = 2**((len_bin-1)-i)
+        else:
+            list_bin[i] = 0
+
+    return sum(list_bin)
+
+
 def output(base,number):
     if base == 'b':
 
+        print('-'*50)
         print('Decimal :',convert_to_dec(number, 2)) # just dec
+        print('Decimal si coder en complément 2 :', dec_compl_deux(number))
         print('Hexadecimal :', dec_to_hex(convert_to_dec(number, 2))) # just hex
         print('hexadecimal 8 bits :',hex(int(binary(float(convert_to_dec(number, 2))), 2))) # 8 bits
+        print('-'*50)
 
     elif base == 'd':
 
+        print('-'*50)
         print('Binaire :',bin_dec(float(number))) # just bin
         print('Binaire 32 bits :', binary(float(number))) # 32 bits
         print(f'Binaire M&S {bit_size} bits :',integer(number, bit_size)) # M&S
         print('Binaire complément vrai :', compl_vrai(number))
         print('Binaire complément à 2 :', compl_deux(number))
         print('Hexadecimal :', dec_to_hex(number)) # just hex
+        print('Hexadecimal par rapport M&S :', hex(int(str(compl_deux(number)), 2))) # enlever 0x devant
         print('hexadecimal 8 bits :',hex(int(binary(float(number)), 2))) # 8 bits
+        print('-'*50)
 
     elif base == 'h':
+
+        print('-'*50)
         print('binaire :',bin_dec(float.fromhex(number))) # just bin
         print('Binaire 32 bits :', binary(float(float.fromhex(number)))) # 32 bin
         print(f'Binaire M&S {bit_size} bits :',integer(str(int(float.fromhex(number))), bit_size)) # M&S
         print('Binaire complément vrai :', compl_vrai(str(int(float.fromhex(number)))))
         print('Binaire complément à 2 :', compl_deux(str(int(float.fromhex(number)))))
         print('Decimal :',float.fromhex(number)) # just dec
+        print('-'*50)
 
     else:
         print(base, 'is not a valid base (b,d,h)')
