@@ -1,13 +1,6 @@
-#! /bin/python3
+#! /usr/bin/python3
 
-''' 
-Todo:
 
-integer dans h affiche resultat meme si dec est un float
-hex par rapport m&s enlever 0x
-Implementer le codeur en DCB
-
-'''
 dec_convert = { # table convert from base <=16 to dec
 "0": 0,
 "1": 1,
@@ -32,17 +25,15 @@ def convert_to_dec(num, base=10, convert_table=dec_convert):
         bef = num
     else: 
         bef, aft = num.split(".")
-        
+
     for i in enumerate(reversed(bef)):
         integer = convert_table[i[1]]
         if integer >= base: 
             raise ValueError
         ret += base**i[0] * integer
-    
+
     if "." not in num:
-        if negatif:
-            return eval('-'+str(ret)) 
-        return ret
+        return eval('-'+str(ret)) if negatif else ret
 
     for i in enumerate(aft):
         integer = convert_table[i[1]]
@@ -56,6 +47,7 @@ def convert_to_dec(num, base=10, convert_table=dec_convert):
 
 
 def dec2bin(num):
+    # sourcery skip: aug-assign, for-index-underscore, move-assign-in-block, simplify-numeric-comparison, while-to-for
     global whole_list
     global dec_list
     whole_list = []
@@ -69,7 +61,7 @@ def dec2bin(num):
             i = int(whole % 2)
             whole_list.append(i)
             whole /= 2
-            
+    
     decproduct = dec      
     while counter <= 10:
         decproduct = decproduct * (10**-(len(str(decproduct))))
@@ -144,9 +136,12 @@ def dec_to_hex(num):
 def integer(num, bit_size=8): # number = input  et bit = la taille du nombre à la fin
     init_number = eval(num)
     if '.' in num:
-        return 'cannot convert flaot type'
+        f, a = num.split(".")
+        if eval(a) > 0:
+            return 'can not convert flaot type'
+        else:
+            num = f
 
-    num = str(abs(int(num)))
     bit = bin_dec(float(num))
     bef, aft = bit.split(".")
     list_bit = list(bef)
@@ -183,24 +178,59 @@ def compl_deux(num):
 def dec_compl_deux(num):
     list_bin = list(str(num))
     len_bin = len(list_bin)
-    if list_bin[0] == '1':
-        list_bin[0] = -2**(len_bin-1)
-    else:
-        list_bin[0] = 0
-    
+
+    list_bin[0] = -2**(len_bin-1) if list_bin[0] == '1' else 0
+
     for i in range(1,len_bin):
-        if list_bin[i] == '1':
-            list_bin[i] = 2**((len_bin-1)-i)
-        else:
-            list_bin[i] = 0
+        list_bin[i] = 2**((len_bin-1)-i) if list_bin[i] == '1' else 0
 
     return sum(list_bin)
 
+def hex_ms(num): # enleve 0x du resultat
+    try:
+        a = hex(int(str(compl_deux(number)), 2))
+        return a[2:]
+    except ValueError:
+        return 'can not convert float type'
+
+dec_to_dcb = {
+    "0" : "0000",
+    "1" : "0001",
+    "2" : "0010",
+    "3" : "0011",
+    "4" : "0100",
+    "5" : "0101",
+    "6" : "0110",
+    "7" : "0111",
+    "8" : "1000",
+    "9" : "1001",
+}
+
+def dcb(num):
+    if '-' in num:
+        return 'can not convert negativ number'
+    if '.' in num:
+        f, a = num.split(".")
+        if int(a) > 0:
+            return 'can not convert flaot type'
+        else:
+            num = f
+    
+    list_dcb = list(num)
+    for i in range(len(list_dcb)):
+        if list_dcb[i] == '.':
+            continue
+        else:
+            list_dcb[i] = dec_to_dcb[f"{list_dcb[i]}"]
+    
+    return "".join(list_dcb)
+    
 
 def output(base,number):
     if base == 'b':
 
         print('-'*50)
+        print('DCB :', dcb(str(convert_to_dec(number, 2))))
         print('Decimal :',convert_to_dec(number, 2)) # just dec
         print('Decimal si coder en complément 2 :', dec_compl_deux(number))
         print('Hexadecimal :', dec_to_hex(convert_to_dec(number, 2))) # just hex
@@ -215,8 +245,9 @@ def output(base,number):
         print(f'Binaire M&S {bit_size} bits :',integer(number, bit_size)) # M&S
         print('Binaire complément vrai :', compl_vrai(number))
         print('Binaire complément à 2 :', compl_deux(number))
+        print('DCB :', dcb(number))
         print('Hexadecimal :', dec_to_hex(number)) # just hex
-        print('Hexadecimal par rapport M&S :', hex(int(str(compl_deux(number)), 2))) # enlever 0x devant
+        print('Hexdecimal par rapport M&S :', hex_ms(number))
         print('hexadecimal 8 bits :',hex(int(binary(float(number)), 2))) # 8 bits
         print('-'*50)
 
@@ -228,6 +259,7 @@ def output(base,number):
         print(f'Binaire M&S {bit_size} bits :',integer(str(int(float.fromhex(number))), bit_size)) # M&S
         print('Binaire complément vrai :', compl_vrai(str(int(float.fromhex(number)))))
         print('Binaire complément à 2 :', compl_deux(str(int(float.fromhex(number)))))
+        print('DCB :', dcb(str(float.fromhex(number))))
         print('Decimal :',float.fromhex(number)) # just dec
         print('-'*50)
 
@@ -239,3 +271,13 @@ if __name__ == "__main__":
     number = str(input('Digit :'))
     bit_size = eval(input('Input the bit size for the binary number :'))
     output(base, number)
+
+
+
+
+''' 
+Todo:
+
+?Code gray ?
+Enlever touteS les erreurs
+'''
